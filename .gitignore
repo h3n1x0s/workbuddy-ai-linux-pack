@@ -1,4 +1,6 @@
 files/workbuddy-ai-app.tar.zst
+files/workbuddy-ai-app.tar.gz
 *.tar.zst
 *.tar.zst.sha256
+*.tar.gz
 .DS_Store

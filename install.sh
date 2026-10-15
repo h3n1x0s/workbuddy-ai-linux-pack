@@ -122,6 +122,13 @@ case "$APP_ARCHIVE" in
 esac
 chmod +x "$APP_DST/start.sh" "$APP_DST/electron" 2>/dev/null || true
 
+# Remove the stale .desktop file baked into the payload by the packager's
+# build machine — it contains a hardcoded absolute path (e.g.
+# /home/henix/.../start.sh) that is invalid on the target system.  This
+# installer writes its own correct desktop entry below, so the leftover is
+# pure dead weight.
+rm -f "$APP_DST/.workbuddy-linux/workbuddy-ai.desktop"
+
 log "2/5 writing launcher $BIN_DST"
 cat > "$BIN_DST" <<EOF
 #!/usr/bin/env bash

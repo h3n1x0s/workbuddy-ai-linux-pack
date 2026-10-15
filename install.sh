@@ -15,6 +15,31 @@ log() { printf '\033[32m[install]\033[0m %s\n' "$*"; }
 warn() { printf '\033[33m[warn]\033[0m %s\n' "$*"; }
 die() { printf '\033[31m[error]\033[0m %s\n' "$*" >&2; exit 1; }
 
+show_help() {
+  cat <<EOF
+Usage: $(basename "$0") [OPTION]
+
+Install WorkBuddy AI international edition as a per-user install.
+
+Options:
+  --uninstall     Remove WorkBuddy AI (user data in ~/.workbuddy-ai is kept)
+  --help, -h      Show this help message
+
+Environment:
+  PREFIX          Install prefix (default: \$HOME/.local)
+
+Installed paths:
+  App:        \$PREFIX/opt/workbuddy-ai
+  Launcher:   \$PREFIX/bin/workbuddy-ai
+  Desktop:    \$PREFIX/share/applications/workbuddy-ai.desktop
+EOF
+  exit 0
+}
+
+if [ "${1:-}" = "--help" ] || [ "${1:-}" = "-h" ]; then
+  show_help
+fi
+
 if [ "${1:-}" = "--uninstall" ]; then
   log "removing WorkBuddy AI from $PREFIX"
   rm -rf "$APP_DST"
@@ -193,6 +218,18 @@ for S in workbuddy-ai workbuddy; do
   handler="$(xdg-mime query default "x-scheme-handler/$S" 2>/dev/null || true)"
   [ "$handler" = "$APP_NAME.desktop" ] && log "  x-scheme-handler/$S -> $handler" || warn "  x-scheme-handler/$S -> ${handler:-<unregistered>}"
 done
+
+# Warn if the launcher directory is not in PATH
+case ":$PATH:" in
+  *":$PREFIX/bin:"*) ;;
+  *)
+    warn "$PREFIX/bin is not in your PATH."
+    warn "  Add it to your shell profile (e.g. ~/.bashrc):"
+    warn "    export PATH=\"$PREFIX/bin:\$PATH\""
+    warn "  Or launch with the full path: $BIN_DST"
+    ;;
+esac
+
 [ "$FAIL" -eq 0 ] || die "self-check failed"
 
 log "install complete"
